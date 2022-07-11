@@ -8,7 +8,7 @@
 
 
 <div align="center">
-  <b>Smoke</b> - The communication interface for <a href="https://github.com/emberry-org/emberry">Emberry</a> <a href="https://github.com/emberry-org/rhizome">Rhizome</a>chat!<br>
+  <b>Smoke</b> - A communication protocol for the <a href="https://github.com/emberry-org/emberry">Emberry</a> chat!<br>
 </div>
 
 <br>
