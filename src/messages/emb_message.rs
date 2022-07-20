@@ -2,7 +2,8 @@ use std::io;
 
 use serde::{Deserialize, Serialize};
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, AsyncRead, AsyncWrite, BufReader};
-use tokio_rustls::server::TlsStream;
+use tokio_rustls::server::TlsStream as STlsStream;
+use tokio_rustls::client::TlsStream as CTlsStream;
 
 use crate::User;
 
@@ -20,7 +21,7 @@ pub enum EmbMessage {
 
 impl EmbMessage {
     pub async fn recv_req<T>(
-        tls: &mut BufReader<TlsStream<T>>,
+        tls: &mut BufReader<STlsStream<T>>,
         buf: &mut EmbMessageBuf,
     ) -> io::Result<EmbMessage>
     where
@@ -34,7 +35,7 @@ impl EmbMessage {
         postcard::from_bytes_cobs(buf).map_err(|err| io::Error::new(io::ErrorKind::Other, err))
     }
 
-    pub async fn send_with<T>(self, tls: &mut BufReader<TlsStream<T>>) -> io::Result<()>
+    pub async fn send_with<T>(self, tls: &mut BufReader<CTlsStream<T>>) -> io::Result<()>
     where
         T: AsyncRead + AsyncWrite + Unpin,
     {

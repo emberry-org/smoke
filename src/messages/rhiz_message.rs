@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use tokio::io::{AsyncBufReadExt, AsyncRead, AsyncWrite, AsyncWriteExt, BufReader};
-use tokio_rustls::server::TlsStream;
+use tokio_rustls::server::TlsStream as STlsStream;
+use tokio_rustls::client::TlsStream as CTlsStream;
 
 use crate::User;
 
@@ -17,7 +18,7 @@ pub enum RhizMessage {
 }
 
 impl RhizMessage {
-    pub async fn send_with<T>(self, tls: &mut BufReader<TlsStream<T>>) -> io::Result<()>
+    pub async fn send_with<T>(self, tls: &mut BufReader<STlsStream<T>>) -> io::Result<()>
     where
         T: AsyncRead + AsyncWrite + Unpin,
     {
@@ -32,7 +33,7 @@ impl RhizMessage {
     }
 
     pub async fn recv_with<T>(
-        tls: &mut BufReader<TlsStream<T>>,
+        tls: &mut BufReader<CTlsStream<T>>,
         buf: &mut Vec<u8>,
     ) -> io::Result<RhizMessage>
     where
