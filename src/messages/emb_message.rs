@@ -1,7 +1,7 @@
 use std::io;
 
 use serde::{Deserialize, Serialize};
-use tokio::io::{AsyncBufReadExt, AsyncRead, AsyncWrite, BufReader};
+use tokio::io::{AsyncBufReadExt, AsyncWriteExt, AsyncRead, AsyncWrite, BufReader};
 use tokio_rustls::server::TlsStream;
 
 use crate::User;
@@ -32,5 +32,19 @@ impl EmbMessage {
         }
 
         postcard::from_bytes_cobs(buf).map_err(|err| io::Error::new(io::ErrorKind::Other, err))
+    }
+
+    pub async fn send_with<T>(self, tls: &mut BufReader<TlsStream<T>>) -> io::Result<()>
+    where
+        T: AsyncRead + AsyncWrite + Unpin,
+    {
+        // use 192 byte buffer since we restrict wants room string to max 128 characters
+        let bytes = postcard::to_vec_cobs::<Self, EMB_MESSAGE_BUF_SIZE>(&self)
+            .expect("there was a big oopsie during developement!
+            serialization size for EmbMessage was bigger then the specified buffer size");
+
+        #[cfg(feature = "debug")]
+        println!("sent msg");
+        tls.write_all(&bytes).await
     }
 }
