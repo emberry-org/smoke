@@ -12,7 +12,7 @@ pub enum RhizMessage {
     HasRoute(User),
     NoRoute(User),
     WantsRoom(User),
-    AcceptedRoom(Option<[u8; 32]>),
+    AcceptedRoom(Option<User>),
     ServerError(String),
     Shutdown(),
 }
