@@ -7,12 +7,14 @@ use crate::User;
 
 use std::io::{self, ErrorKind};
 
+use super::RoomId;
+
 #[derive(Clone, Serialize, Deserialize)]
 pub enum RhizMessage {
     HasRoute(User),
     NoRoute(User),
     WantsRoom(User),
-    AcceptedRoom(Option<User>),
+    AcceptedRoom(Option<RoomId>),
     ServerError(String),
     Shutdown(),
 }
