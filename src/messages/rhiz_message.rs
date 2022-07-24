@@ -9,7 +9,7 @@ use std::io::{self, ErrorKind};
 
 use super::RoomId;
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq)]
 pub enum RhizMessage {
     HasRoute(User),
     NoRoute(User),

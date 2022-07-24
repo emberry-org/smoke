@@ -11,7 +11,7 @@ use crate::User;
 pub const EMB_MESSAGE_BUF_SIZE: usize = 64;
 pub type EmbMessageBuf = Vec<u8>;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 pub enum EmbMessage {
     Room(User),
     Accept(bool),
