@@ -15,7 +15,7 @@ pub enum RhizMessage {
     HasRoute(User),
     NoRoute(User),
     WantsRoom(User),
-    AcceptedRoom(Option<RoomId>),
+    AcceptedRoom(Option<RoomId>, User),
     ServerError(String),
     Shutdown(),
 }
