@@ -9,7 +9,6 @@ use crate::User;
 
 
 pub const EMB_MESSAGE_BUF_SIZE: usize = 64;
-pub type EmbMessageBuf = Vec<u8>;
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 pub enum EmbMessage {
@@ -22,7 +21,7 @@ pub enum EmbMessage {
 impl EmbMessage {
     pub async fn recv_req<T>(
         tls: &mut BufReader<STlsStream<T>>,
-        buf: &mut EmbMessageBuf,
+        buf: &mut Vec<u8>,
     ) -> io::Result<EmbMessage>
     where
         T: AsyncRead + AsyncWrite + Unpin,
