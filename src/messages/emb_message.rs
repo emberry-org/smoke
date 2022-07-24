@@ -27,6 +27,7 @@ impl EmbMessage {
     where
         T: AsyncRead + AsyncWrite + Unpin,
     {
+        buf.clear();
         // 0 means EOF so we shutdown the connection
         if 0 == tls.read_until(0, buf).await? {
             return Ok(EmbMessage::Shutdown);

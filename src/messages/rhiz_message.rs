@@ -6,6 +6,7 @@ use tokio_rustls::client::TlsStream as CTlsStream;
 use crate::User;
 
 use std::io::{self, ErrorKind};
+pub const MAX_MESSAGE_BUF_SIZE: usize = 96;
 
 use super::RoomId;
 
@@ -25,7 +26,7 @@ impl RhizMessage {
         T: AsyncRead + AsyncWrite + Unpin,
     {
         // use 192 byte buffer since we restrict wants room string to max 128 characters
-        let bytes = postcard::to_vec_cobs::<Self, 64>(&self).map_err(|_| {
+        let bytes = postcard::to_vec_cobs::<Self, MAX_MESSAGE_BUF_SIZE>(&self).map_err(|_| {
             io::Error::new(ErrorKind::OutOfMemory, "Unable to serialize RhizMessage, more then 64 byte")
         })?;
 
@@ -41,6 +42,7 @@ impl RhizMessage {
     where
         T: AsyncRead + AsyncWrite + Unpin,
     {
+        buf.clear();
         // 0 means EOF so we shutdown the connection
         if 0 == tls.read_until(0, buf).await? {
             return Ok(RhizMessage::Shutdown());
