@@ -7,6 +7,7 @@ use log::trace;
 
 /// Container for all possible messages that are being sent from Rhizome (server) to Emberry (client)
 #[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[serde(tag = "type", content = "content")]
 pub enum Signal {
     /// Keep alive message
     Kap,
