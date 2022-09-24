@@ -1,4 +1,5 @@
 mod room_id;
+pub mod signal;
 pub mod emb_message;
 pub mod rhiz_message;
 
