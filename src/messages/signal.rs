@@ -39,7 +39,7 @@ impl Signal {
         let bytes = postcard::to_vec_cobs::<Self, MAX_SIGNAL_BUF_SIZE>(&self).map_err(|_| {
             io::Error::new(
                 ErrorKind::OutOfMemory,
-                "Unable to serialize RhizMessage, more then 64 byte",
+                "Unable to serialize Signal, more then 4096 byte",
             )
         })?;
 
