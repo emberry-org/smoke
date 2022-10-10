@@ -1,6 +1,6 @@
 <h1 align="center">
     <div align="center">
-        <img width=140 src="https://github.com/emberry-org/smoke/blob/main/.github/assets/smoke.png"> 
+        <img width=140 src="https://github.com/emberry-org/smoke/blob/main/.github/assets/smoke.svg"> 
     </div>
     <a href="https://github.com/emberry-org/smoke/actions/workflows/tests.yml"><img src="https://github.com/emberry-org/smoke/actions/workflows/tests.yml/badge.svg" height=20 align="right" /></a>
     <a href="https://github.com/emberry-org/smoke/actions/workflows/audit.yml"><img src="https://github.com/emberry-org/smoke/actions/workflows/audit.yml/badge.svg" height=20 align="right" /></a>
