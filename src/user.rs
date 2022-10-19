@@ -1,8 +1,7 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Copy, Serialize, Deserialize, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq, Hash)]
 pub struct User {
-    pub key: PubKey,
+    // DER encoded x509 certificate
+    pub cert_data: Vec<u8>,
 }
-
-pub type PubKey = [u8; 32];

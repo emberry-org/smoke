@@ -7,7 +7,7 @@ use tokio_rustls::server::TlsStream as STlsStream;
 
 use crate::User;
 
-pub const EMB_MESSAGE_BUF_SIZE: usize = 64;
+pub const EMB_MESSAGE_BUF_SIZE: usize = 1024;
 
 /// Container for all possible messages that are being sent from Emberry (client) to Rhizome (server)
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
@@ -43,11 +43,16 @@ impl EmbMessage {
         T: AsyncRead + AsyncWrite + Unpin,
     {
         // Serialize and packetize the message
-        // use expect here as it is technically not possible for this to fail (Compiler cannot know that)
-        let bytes = postcard::to_vec_cobs::<Self, EMB_MESSAGE_BUF_SIZE>(&self).expect(
-            "there was a big oopsie during developement!
-            serialization size for EmbMessage was bigger then the specified buffer size",
-        );
+        let bytes = match postcard::to_vec_cobs::<Self, EMB_MESSAGE_BUF_SIZE>(&self) {
+            Ok(vec) => vec,
+            Err(e) => {
+                log::error!(
+                    "Serialization of message failed. Message requires more then {} bytes to be serialized",
+                    EMB_MESSAGE_BUF_SIZE
+                );
+                return Err(io::Error::new(io::ErrorKind::Other, e));
+            }
+        };
 
         #[cfg(feature = "debug")]
         println!("sent msg");

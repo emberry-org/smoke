@@ -1,6 +1,5 @@
-mod user;
 pub mod messages;
+mod user;
 
-pub use user::User;
-pub use user::PubKey;
 pub use messages::signal::Signal;
+pub use user::User;
