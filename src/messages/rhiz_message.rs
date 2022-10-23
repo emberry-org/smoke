@@ -6,7 +6,7 @@ use tokio_rustls::server::TlsStream as STlsStream;
 use crate::User;
 
 use std::io::{self, ErrorKind};
-pub const MAX_MESSAGE_BUF_SIZE: usize = 96;
+pub const MAX_MESSAGE_BUF_SIZE: usize = 1088;
 
 use super::RoomId;
 
