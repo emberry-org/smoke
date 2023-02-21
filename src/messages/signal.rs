@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use tokio::io::{AsyncBufReadExt, AsyncRead, AsyncWrite, AsyncWriteExt, BufReader};
+use tokio::io::{AsyncBufReadExt, AsyncWriteExt, AsyncBufRead};
 
 use std::io::{self, ErrorKind};
 pub const MAX_SIGNAL_BUF_SIZE: usize = 4096;
@@ -31,9 +31,9 @@ impl Signal {
     /// This function will return:</br>
     /// An [io::Error] when "self" was to large to be serialized within [MAX_SIGNAL_BUF_SIZE].</br>
     /// The first error returned by writing to the io
-    pub async fn send_with<T>(self, tls: &mut BufReader<T>) -> io::Result<()>
+    pub async fn send_with<T>(self, tls: &mut T) -> io::Result<()>
     where
-        T: AsyncRead + AsyncWrite + Unpin,
+        T: AsyncWriteExt + Unpin,
     {
         // Serialize and packetize the message
         let bytes = postcard::to_vec_cobs::<Self, MAX_SIGNAL_BUF_SIZE>(&self).map_err(|_| {
@@ -65,11 +65,11 @@ impl Signal {
     /// In this case the read data is written to the supplied buffer "buf" but not handled in any way.
     /// An [io::Error] when "self" was to large to be serialized within [MAX_SIGNAL_BUF_SIZE].</br>
     pub async fn recv_with<T>(
-        tls: &mut BufReader<T>,
+        tls: &mut T,
         buf: &mut Vec<u8>,
     ) -> io::Result<Self>
     where
-        T: AsyncRead + AsyncWrite + Unpin,
+        T: AsyncBufRead + Unpin,
     {
         buf.clear();
         // 0 means EOF
