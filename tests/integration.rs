@@ -4,6 +4,8 @@ use tokio_test::io::Builder;
 
 #[tokio::test]
 async fn stream_test() {
+    _ = env_logger::try_init();
+
     let msg = Signal::Kap;
     let mut msg_bytes = Vec::<u8>::new();
     msg.clone().send_with(&mut msg_bytes).await.unwrap();
@@ -21,6 +23,8 @@ async fn stream_test() {
 
 #[tokio::test]
 async fn stream_test_complex() {
+    _ = env_logger::try_init();
+
     let msg = Signal::Username("Aurelia".to_string());
     let mut msg_bytes = Vec::<u8>::new();
     msg.clone().send_with(&mut msg_bytes).await.unwrap();
@@ -38,6 +42,8 @@ async fn stream_test_complex() {
 
 #[tokio::test]
 async fn stream_test_multiple() {
+    _ = env_logger::try_init();
+
     let msg = Signal::Username("Aurelia".to_string());
     let msg2 = Signal::Kap;
     let mut msg_bytes = Vec::<u8>::new();
