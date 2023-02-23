@@ -80,3 +80,71 @@ async fn stream_test_multiple() {
     assert!(signal.is_ok());
     assert_eq!(signal.unwrap(), msg2);
 }
+
+#[tokio::test]
+async fn stream_test_fragmented() {
+    _ = env_logger::try_init();
+
+    let msg = Signal::Username("Aurelia".to_string());
+    let mut msg_bytes = Vec::<u8>::new();
+    msg.clone().send_with(&mut msg_bytes).await.unwrap();
+    let mid = msg_bytes.len() >> 1;
+    let (first, second) = msg_bytes.split_at(mid);
+
+    let stream = Builder::new().read(first).read(second).build();
+    let mut reader = BufReader::new(stream);
+
+    let mut buf = Vec::with_capacity(1024);
+
+    let signal = Signal::recv_with(&mut reader, &mut buf).await;
+    assert!(signal.is_ok(), "{:?}", signal.unwrap_err());
+    assert_eq!(signal.unwrap(), msg);
+}
+
+#[tokio::test]
+async fn stream_test_fragmented_multi() {
+    _ = env_logger::try_init();
+
+    let msg = Signal::Username("Aurelia".to_string());
+    let mut msg_bytes = Vec::<u8>::new();
+    msg.clone().send_with(&mut msg_bytes).await.unwrap();
+    let mid = msg_bytes.len() >> 1;
+    let (first, second) = msg_bytes.split_at(mid);
+
+    let stream = Builder::new().read(first).read(second).read(first).read(second).build();
+    let mut reader = BufReader::new(stream);
+
+    let mut buf = Vec::with_capacity(1024);
+
+    let signal = Signal::recv_with(&mut reader, &mut buf).await;
+    assert!(signal.is_ok(), "{:?}", signal.unwrap_err());
+    assert_eq!(signal.unwrap(), msg);
+
+    let signal = Signal::recv_with(&mut reader, &mut buf).await;
+    assert!(signal.is_ok(), "{:?}", signal.unwrap_err());
+    assert_eq!(signal.unwrap(), msg);
+}
+
+#[tokio::test]
+async fn stream_test_fragmented_multi_hybrid() {
+    _ = env_logger::try_init();
+
+    let msg = Signal::Username("Aurelia".to_string());
+    let mut msg_bytes = Vec::<u8>::new();
+    msg.clone().send_with(&mut msg_bytes).await.unwrap();
+    let mid = msg_bytes.len() >> 1;
+    let (first, second) = msg_bytes.split_at(mid);
+
+    let stream = Builder::new().read(first).read(second).read(&msg_bytes).build();
+    let mut reader = BufReader::new(stream);
+
+    let mut buf = Vec::with_capacity(1024);
+
+    let signal = Signal::recv_with(&mut reader, &mut buf).await;
+    assert!(signal.is_ok(), "{:?}", signal.unwrap_err());
+    assert_eq!(signal.unwrap(), msg);
+
+    let signal = Signal::recv_with(&mut reader, &mut buf).await;
+    assert!(signal.is_ok(), "{:?}", signal.unwrap_err());
+    assert_eq!(signal.unwrap(), msg);
+}
