@@ -15,9 +15,8 @@ async fn encode() {
 
 async fn decode(bytes: &[u8]) {
     let mut reader = BufReader::new(bytes);
-    let mut buf = Vec::new();
 
-    let _signal = black_box(Signal::recv_with(&mut reader, &mut buf).await);
+    let _signal = black_box(Signal::recv_with(&mut reader).await);
 }
 
 async fn encode_decode_mock() {
@@ -29,9 +28,8 @@ async fn encode_decode_mock() {
 
     let stream = Builder::new().read(&msg_bytes).build();
     let mut reader = BufReader::new(stream);
-    let mut buf = Vec::new();
 
-    let _signal = black_box(Signal::recv_with(&mut reader, &mut buf).await);
+    let _signal = black_box(Signal::recv_with(&mut reader).await);
 }
 
 async fn encode_decode_cursor() {
@@ -43,9 +41,8 @@ async fn encode_decode_cursor() {
 
     let cursor = Cursor::new(msg_bytes);
     let mut reader = BufReader::new(cursor);
-    let mut buf = Vec::new();
 
-    let _signal = black_box(Signal::recv_with(&mut reader, &mut buf).await);
+    let _signal = black_box(Signal::recv_with(&mut reader).await);
 }
 
 async fn encode_decode_multiple(&quantity: &u64) {
@@ -60,10 +57,9 @@ async fn encode_decode_multiple(&quantity: &u64) {
     };
 
     let mut reader = BufReader::new(mock);
-    let mut buf = Vec::with_capacity(1024);
 
     for _ in 0..quantity {
-        let _signal = black_box(Signal::recv_with(&mut reader, &mut buf).await);
+        let _signal = black_box(Signal::recv_with(&mut reader).await);
     }
 }
 
@@ -82,10 +78,9 @@ async fn encode_decode_multiple_unbuffered(&quantity: &u64) {
     };
 
     let mut reader = BufReader::new(mock);
-    let mut buf = Vec::with_capacity(1024);
 
     for _ in 0..quantity {
-        let _signal = black_box(Signal::recv_with(&mut reader, &mut buf).await);
+        let _signal = black_box(Signal::recv_with(&mut reader).await);
     }
 }
 
@@ -109,10 +104,9 @@ async fn encode_decode_multiple_fragmented(&quantity: &u64) {
     };
 
     let mut reader = BufReader::new(mock);
-    let mut buf = Vec::with_capacity(1024);
 
     for _ in 0..quantity {
-        let _signal = black_box(Signal::recv_with(&mut reader, &mut buf).await);
+        let _signal = black_box(Signal::recv_with(&mut reader).await);
     }
 }
 
