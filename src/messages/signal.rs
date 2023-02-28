@@ -1,9 +1,8 @@
 use serde::{Deserialize, Serialize};
-use tokio::io::{AsyncBufRead, AsyncBufReadExt, AsyncWrite, AsyncWriteExt};
+use tokio::io::{AsyncBufRead, AsyncBufReadExt};
 
 use std::io::{self, ErrorKind};
 pub const MAX_SIGNAL_BUF_SIZE: usize = 4096;
-use log::trace;
 
 /// Container for all possible messages that are being sent from Rhizome (server) to Emberry (client)
 #[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq)]
@@ -19,34 +18,6 @@ pub enum Signal {
 }
 
 impl Signal {
-    /// Serializes ([postcard]) "self" and asyncronously sends the resulting binary data using the supplied writer
-    ///
-    /// # Cancel safety
-    /// This method is not cancellation safe. If it is used as the event
-    /// in a tokio::select statement and some other branch completes first,
-    /// then the serialized message may have been partially written, but
-    /// future calls will start from the beginning.
-    ///
-    /// # Errors
-    /// This function will return:</br>
-    /// An [io::ErrorKind::Other] when "self" was to large to be serialized within [MAX_SIGNAL_BUF_SIZE].</br>
-    /// The first error returned by the writer
-    pub async fn send_with<T>(self, writer: &mut T) -> io::Result<()>
-    where
-        T: AsyncWrite + Unpin,
-    {
-        // Serialize and packetize the message
-        let bytes = postcard::to_vec::<Self, MAX_SIGNAL_BUF_SIZE>(&self).map_err(|_| {
-            io::Error::new(
-                ErrorKind::OutOfMemory,
-                "Unable to serialize Signal, more then 4096 byte",
-            )
-        })?;
-
-        trace!("sent {}", bytes.len());
-        writer.write_all(&bytes).await
-    }
-
     /// Reads a [Signal] from the buf_reader, deserializing ([postcard]) the data.
     ///
     /// # Cancel safety
