@@ -87,10 +87,10 @@ async fn stream_test_fragmented() {
     let mut msg_bytes = Vec::<u8>::new();
     let mut ser_buf = [0u8; smoke::messages::signal::MAX_SIGNAL_BUF_SIZE];
     msg.clone().serialize_to(&mut msg_bytes, &mut ser_buf).expect("could not serialize").await.unwrap();
-    let mid = msg_bytes.len() >> 1;
-    let (first, second) = msg_bytes.split_at(mid);
+    let (first, second) = msg_bytes.split_at(msg_bytes.len() / 3);
+    let (second, third) = second.split_at(second.len() / 2);
 
-    let stream = Builder::new().read(first).read(second).build();
+    let stream = Builder::new().read(first).read(second).read(third).build();
     let mut reader = BufReader::new(stream);
 
     let signal = Signal::recv_with(&mut reader).await;
@@ -106,14 +106,16 @@ async fn stream_test_fragmented_multi() {
     let mut msg_bytes = Vec::<u8>::new();
     let mut ser_buf = [0u8; smoke::messages::signal::MAX_SIGNAL_BUF_SIZE];
     msg.clone().serialize_to(&mut msg_bytes, &mut ser_buf).expect("could not serialize").await.unwrap();
-    let mid = msg_bytes.len() >> 1;
-    let (first, second) = msg_bytes.split_at(mid);
+    let (first, second) = msg_bytes.split_at(msg_bytes.len() / 3);
+    let (second, third) = second.split_at(second.len() / 2);
 
     let stream = Builder::new()
         .read(first)
         .read(second)
+        .read(third)
         .read(first)
         .read(second)
+        .read(third)
         .build();
     let mut reader = BufReader::new(stream);
 
@@ -134,12 +136,13 @@ async fn stream_test_fragmented_multi_hybrid() {
     let mut msg_bytes = Vec::<u8>::new();
     let mut ser_buf = [0u8; smoke::messages::signal::MAX_SIGNAL_BUF_SIZE];
     msg.clone().serialize_to(&mut msg_bytes, &mut ser_buf).expect("could not serialize").await.unwrap();
-    let mid = msg_bytes.len() >> 1;
-    let (first, second) = msg_bytes.split_at(mid);
+    let (first, second) = msg_bytes.split_at(msg_bytes.len() / 3);
+    let (second, third) = second.split_at(second.len() / 2);
 
     let stream = Builder::new()
         .read(first)
         .read(second)
+        .read(third)
         .read(&msg_bytes)
         .build();
     let mut reader = BufReader::new(stream);
