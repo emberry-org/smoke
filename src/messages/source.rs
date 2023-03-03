@@ -36,7 +36,7 @@ mod partial_tokio_copy {
         #[must_use = "futures do nothing unless you `.await` or poll them"]
         pub struct ReadMsg<'a, R: ?Sized, M: DeserializeOwned> {
             buf_reader: &'a mut R,
-            agg: Vec<u8>,
+            agg: Option<Vec<u8>>,
             // Make this future `!Unpin` for compatibility with async trait methods.
             #[pin]
             _pin: PhantomPinned,
@@ -53,7 +53,7 @@ mod partial_tokio_copy {
     {
         ReadMsg {
             buf_reader,
-            agg: Vec::new(),
+            agg: None,
             _pin: PhantomPinned,
             _message: PhantomData,
         }
@@ -68,28 +68,44 @@ mod partial_tokio_copy {
         fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<M>> {
             let me = self.project();
 
-            // if the aggregator is empty try to read without copying the data
-            let data: &[u8];
-            if me.agg.is_empty() {
-                data = ready!(Pin::new(&mut *me.buf_reader).poll_fill_buf(cx))?;
-                let (message, used) = try_deser::<M>(data);
+            loop {
+                // if the aggregator is empty try to read without copying the data
+                let Some(agg) = me.agg else {
+                    let data = ready!(Pin::new(&mut *me.buf_reader).poll_fill_buf(cx))?;
 
-                // if we have no message push the data to the aggregator
-                if let Ok(None) = message {
-                    me.agg.extend_from_slice(data);
-                }
+                    let (message, used) = try_deser::<M>(data);
 
-                // in any way consume used data
-                // used will be data.len() if msg was none or err
-                me.buf_reader.consume(used);
+                    // if we have no message push the data to the aggregator
+                    if let Ok(None) = message {
+                        let mut vec = Vec::with_capacity(data.len() * 2);
+                        vec.extend_from_slice(data);
+                        *me.agg = Some(vec);
+                    }
 
-                try_finalize(message?, used, cx)
-            } else {
+                    // in any way consume used data
+                    // used will be data.len() if msg was none or err
+                    me.buf_reader.consume(used);
+
+                    if let Some(message) = message? {
+                        return Poll::Ready(Ok(message));
+                    }
+
+                    if used == 0 {
+                        return Poll::Ready(Err(io::Error::new(
+                            ErrorKind::ConnectionReset,
+                            "EOF reached",
+                        )));
+                    }
+
+                    continue;
+                };
+
                 let data = ready!(Pin::new(&mut *me.buf_reader).poll_fill_buf(cx))?;
-                let agg_size_before = me.agg.len();
-                me.agg.extend_from_slice(data);
 
-                let (message, used_total) = try_deser::<M>(me.agg);
+                let agg_size_before = agg.len();
+                agg.extend_from_slice(data); //0001
+
+                let (message, used_total) = try_deser::<M>(agg);
 
                 // subtract agg_size_before to get the "new" bytes that were used
                 let used_data = used_total - agg_size_before;
@@ -98,30 +114,21 @@ mod partial_tokio_copy {
                 // used will be data.len() if msg was none or err
                 me.buf_reader.consume(used_data);
 
-                let message = message?;
+                if let Some(message) = message? {
+                    return Poll::Ready(Ok(message));
+                }
 
-                try_finalize(message, used_data, cx)
-            }
-        }
-    }
-
-    fn try_finalize<M>(message: Option<M>, used: usize, cx: &mut Context<'_>) -> Poll<Result<M, io::Error>> {
-        match message {
-            Some(msg) => Poll::Ready(Ok(msg)),
-            None => {
-                if used == 0 {
-                    Poll::Ready(Err(io::Error::new(
+                if used_data == 0 {
+                    return Poll::Ready(Err(io::Error::new(
                         ErrorKind::ConnectionReset,
                         "EOF reached",
-                    )))
-                } else {
-                    cx.waker().wake_by_ref();
-                    Poll::Pending
+                    )));
                 }
             }
         }
     }
 
+    #[inline]
     fn try_deser<M: DeserializeOwned>(data: &[u8]) -> (io::Result<Option<M>>, usize) {
         match postcard::take_from_bytes::<M>(data) {
             Err(postcard::Error::DeserializeUnexpectedEnd) => (Ok(None), data.len()),
