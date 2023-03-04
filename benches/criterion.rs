@@ -1,7 +1,7 @@
 use std::{hint::black_box, io::Cursor};
 
 use criterion::{criterion_group, criterion_main, Criterion};
-use smoke::messages::Drain;
+use smoke::messages::{Drain, Source};
 use smoke::Signal;
 use tokio::io::BufReader;
 use tokio_test::io::Builder;
@@ -19,7 +19,7 @@ async fn encode() {
 async fn decode(bytes: &[u8]) {
     let mut reader = BufReader::new(bytes);
 
-    let _signal = black_box(Signal::recv_with(&mut reader).await);
+    let _signal = black_box(reader.read_message::<Signal>().await);
 }
 
 async fn encode_decode_mock() {
@@ -34,7 +34,7 @@ async fn encode_decode_mock() {
     let stream = Builder::new().read(&msg_bytes).build();
     let mut reader = BufReader::new(stream);
 
-    let _signal = black_box(Signal::recv_with(&mut reader).await);
+    let _signal = black_box(reader.read_message::<Signal>().await);
 }
 
 async fn encode_decode_cursor() {
@@ -49,7 +49,7 @@ async fn encode_decode_cursor() {
     let cursor = Cursor::new(msg_bytes);
     let mut reader = BufReader::new(cursor);
 
-    let _signal = black_box(Signal::recv_with(&mut reader).await);
+    let _signal = black_box(reader.read_message::<Signal>().await);
 }
 
 async fn encode_decode_multiple(&quantity: &u64) {
@@ -71,7 +71,7 @@ async fn encode_decode_multiple(&quantity: &u64) {
     let mut reader = BufReader::new(mock);
 
     for _ in 0..quantity {
-        let _signal = black_box(Signal::recv_with(&mut reader).await);
+        let _signal = black_box(reader.read_message::<Signal>().await);
     }
 }
 
@@ -97,39 +97,40 @@ async fn encode_decode_multiple_unbuffered(&quantity: &u64) {
     let mut reader = BufReader::new(mock);
 
     for _ in 0..quantity {
-        let _signal = black_box(Signal::recv_with(&mut reader).await);
+        let _signal = black_box(reader.read_message::<Signal>().await);
     }
 }
 
 async fn encode_decode_multiple_fragmented(&quantity: &u64) {
-    let mock = {
-        let msg = Signal::Username("Aurelia".to_string());
-        let mut msg_bytes = Vec::<u8>::new();
-        let mut ser_buf = [0u8; smoke::messages::signal::MAX_SIGNAL_BUF_SIZE];
-        let mut builder = Builder::new();
-        for _ in 0..quantity {
-            msg.clone()
-                .serialize_to(&mut msg_bytes, &mut ser_buf)
-                .expect("could not serialize")
-                .await
-                .unwrap();
-
-            let mid = msg_bytes.len() >> 1;
-            let (first, second) = msg_bytes.split_at(mid);
-
-            builder.read(first).read(second);
-
-            msg_bytes.clear();
-        }
-
-        builder.build()
-    };
-
-    let mut reader = BufReader::new(mock);
+    let mut reader = encode_decode_multiple_fragmented_setup(&quantity).await;
+    let mut reader = BufReader::new(reader.build());
 
     for _ in 0..quantity {
-        let _signal = black_box(Signal::recv_with(&mut reader).await);
+        let _signal = black_box(reader.read_message::<Signal>().await);
     }
+}
+
+async fn encode_decode_multiple_fragmented_setup(&quantity: &u64) -> Builder {
+    let msg = Signal::Username("Aurelia".to_string());
+    let mut msg_bytes = Vec::<u8>::new();
+    let mut ser_buf = [0u8; smoke::messages::signal::MAX_SIGNAL_BUF_SIZE];
+    let mut builder = Builder::new();
+    for _ in 0..quantity {
+        msg.clone()
+            .serialize_to(&mut msg_bytes, &mut ser_buf)
+            .expect("could not serialize")
+            .await
+            .unwrap();
+
+        let mid = msg_bytes.len() >> 1;
+        let (first, second) = msg_bytes.split_at(mid);
+
+        builder.read(first).read(second);
+
+        msg_bytes.clear();
+    }
+
+    builder
 }
 
 fn criterion_benchmark(c: &mut Criterion) {

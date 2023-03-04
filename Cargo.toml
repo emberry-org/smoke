@@ -17,7 +17,12 @@ pin-project-lite = "0.2"
 tokio-test = "0.4.2"
 env_logger = "0.9"
 criterion = { version = "0.3", features = ["html_reports", "async_tokio"] }
+iai = "0.1"
 
 [[bench]]
-name = "signal"
+name = "criterion"
+harness = false
+
+[[bench]]
+name = "iai"
 harness = false

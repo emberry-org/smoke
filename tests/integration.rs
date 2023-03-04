@@ -1,5 +1,6 @@
 use smoke::Signal;
 use smoke::messages::Drain;
+use smoke::messages::Source;
 use tokio::io::BufReader;
 use tokio_test::io::Builder;
 
@@ -15,7 +16,7 @@ async fn stream_test() {
     let stream = Builder::new().read(&msg_bytes).build();
     let mut reader = BufReader::new(stream);
 
-    let signal = Signal::recv_with(&mut reader).await;
+    let signal = reader.read_message::<Signal>().await;
 
     assert!(signal.is_ok());
     assert_eq!(signal.unwrap(), msg);
@@ -33,7 +34,7 @@ async fn stream_test_complex() {
     let stream = Builder::new().read(&msg_bytes).build();
     let mut reader = BufReader::new(stream);
 
-    let signal = Signal::recv_with(&mut reader).await;
+    let signal = reader.read_message::<Signal>().await;
 
     assert!(signal.is_ok());
     assert_eq!(signal.unwrap(), msg);
@@ -54,27 +55,27 @@ async fn stream_test_multiple() {
     let stream = Builder::new().read(&msg_bytes).read(&msg_bytes).build();
     let mut reader = BufReader::new(stream);
 
-    let signal = Signal::recv_with(&mut reader).await;
+    let signal = reader.read_message::<Signal>().await;
     assert!(signal.is_ok());
     assert_eq!(signal.unwrap(), msg2);
 
-    let signal = Signal::recv_with(&mut reader).await;
+    let signal = reader.read_message::<Signal>().await;
     assert!(signal.is_ok());
     assert_eq!(signal.unwrap(), msg);
 
-    let signal = Signal::recv_with(&mut reader).await;
+    let signal = reader.read_message::<Signal>().await;
     assert!(signal.is_ok());
     assert_eq!(signal.unwrap(), msg2);
 
-    let signal = Signal::recv_with(&mut reader).await;
+    let signal = reader.read_message::<Signal>().await;
     assert!(signal.is_ok());
     assert_eq!(signal.unwrap(), msg2);
 
-    let signal = Signal::recv_with(&mut reader).await;
+    let signal = reader.read_message::<Signal>().await;
     assert!(signal.is_ok());
     assert_eq!(signal.unwrap(), msg);
 
-    let signal = Signal::recv_with(&mut reader).await;
+    let signal = reader.read_message::<Signal>().await;
     assert!(signal.is_ok());
     assert_eq!(signal.unwrap(), msg2);
 }
@@ -93,7 +94,7 @@ async fn stream_test_fragmented() {
     let stream = Builder::new().read(first).read(second).read(third).build();
     let mut reader = BufReader::new(stream);
 
-    let signal = Signal::recv_with(&mut reader).await;
+    let signal = reader.read_message::<Signal>().await;
     assert!(signal.is_ok(), "{:?}", signal.unwrap_err());
     assert_eq!(signal.unwrap(), msg);
 }
@@ -119,11 +120,11 @@ async fn stream_test_fragmented_multi() {
         .build();
     let mut reader = BufReader::new(stream);
 
-    let signal = Signal::recv_with(&mut reader).await;
+    let signal = reader.read_message::<Signal>().await;
     assert!(signal.is_ok(), "{:?}", signal.unwrap_err());
     assert_eq!(signal.unwrap(), msg);
 
-    let signal = Signal::recv_with(&mut reader).await;
+    let signal = reader.read_message::<Signal>().await;
     assert!(signal.is_ok(), "{:?}", signal.unwrap_err());
     assert_eq!(signal.unwrap(), msg);
 }
@@ -147,11 +148,11 @@ async fn stream_test_fragmented_multi_hybrid() {
         .build();
     let mut reader = BufReader::new(stream);
 
-    let signal = Signal::recv_with(&mut reader).await;
+    let signal = reader.read_message::<Signal>().await;
     assert!(signal.is_ok(), "{:?}", signal.unwrap_err());
     assert_eq!(signal.unwrap(), msg);
 
-    let signal = Signal::recv_with(&mut reader).await;
+    let signal = reader.read_message::<Signal>().await;
     assert!(signal.is_ok(), "{:?}", signal.unwrap_err());
     assert_eq!(signal.unwrap(), msg);
 }
