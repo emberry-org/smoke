@@ -11,6 +11,28 @@ impl<R> Source for R
 where
     R: AsyncBufRead + Unpin,
 {
+    /// Reads a [M] from the buf_reader, deserializing ([postcard]) the data.
+    /// 
+    /// Equivalent to
+    /// ```ignore
+    /// async fn read_message<M>(&mut self) -> io::Result<M>
+    /// ```
+    ///
+    /// # Cancel safety
+    /// This method is not cancellation safe. If the method is used as
+    /// the event in a tokio::select statement and some other branch
+    /// completes first, then some data may have been partially read.
+    ///
+    /// Any partially read bytes are appended to buf. Calling this method
+    /// again however will use a new buf and will most likely result in deserialization
+    /// failure.
+    ///
+    /// # Errors
+    /// This function will return:</br>
+    /// The first error returned by [self]<br>
+    /// An [ErrorKind::Other] when buf_reader's buffer does not contain a valid [M]
+    /// In this case calling the function again might repeatedly yield errors until a message
+    /// is magically perfectly aligned.
     fn read_message<M: DeserializeOwned>(&mut self) -> ReadMsg<Self, M>
     where
         R: AsyncBufRead + Unpin,
