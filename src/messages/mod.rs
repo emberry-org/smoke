@@ -4,7 +4,9 @@ pub mod emb_message;
 pub mod rhiz_message;
 mod drain;
 mod source;
+mod splitter;
 
+pub use splitter::Splitter;
 pub use drain::Drain;
 pub use source::Source;
 pub use room_id::RoomId;
