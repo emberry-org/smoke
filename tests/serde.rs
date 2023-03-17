@@ -156,3 +156,5 @@ async fn stream_test_fragmented_multi_hybrid() {
     assert!(signal.is_ok(), "{:?}", signal.unwrap_err());
     assert_eq!(signal.unwrap(), msg);
 }
+
+//TODO Read Error tests
