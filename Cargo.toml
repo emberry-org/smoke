@@ -20,6 +20,9 @@ criterion = { version = "0.3", features = ["html_reports", "async_tokio"] }
 iai = "0.1"
 tempfile = "3.4.0"
 
+[patch.crates-io]
+tokio-test = { path = "./tokio-test" }
+
 [[bench]]
 name = "criterion"
 harness = false
