@@ -16,7 +16,7 @@ where
     M: Serialize + ?Sized,
 {
     /// Serializes ([postcard]) "self" and asyncronously sends the resulting binary data using the supplied writer
-    /// 
+    ///
     /// After handleing the [postcard::Error] this is equivalent to
     /// ```ignore
     /// async fn serialize_to(&self, writer: &mut T, ser_buf: &mut [u8]) -> io::Result<()>

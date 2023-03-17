@@ -1,4 +1,4 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use std::cmp::Eq;
 
 #[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Debug)]

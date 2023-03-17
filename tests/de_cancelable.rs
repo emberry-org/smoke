@@ -1,6 +1,6 @@
-use smoke::Signal;
 use smoke::messages::Drain;
 use smoke::messages::Source;
+use smoke::Signal;
 use tokio::io::BufReader;
 use tokio_test::io::Builder;
 
@@ -11,7 +11,11 @@ async fn stream_test() {
     let msg = Signal::Kap;
     let mut msg_bytes = Vec::<u8>::new();
     let mut ser_buf = [0u8; smoke::messages::signal::MAX_SIGNAL_BUF_SIZE];
-    msg.clone().serialize_to(&mut msg_bytes, &mut ser_buf).expect("could not serialize").await.unwrap();
+    msg.clone()
+        .serialize_to(&mut msg_bytes, &mut ser_buf)
+        .expect("could not serialize")
+        .await
+        .unwrap();
 
     let stream = Builder::new().read(&msg_bytes).build();
     let mut reader = BufReader::new(stream);
@@ -31,7 +35,11 @@ async fn stream_test_complex() {
     let msg = Signal::Username("Aurelia".to_string());
     let mut msg_bytes = Vec::<u8>::new();
     let mut ser_buf = [0u8; smoke::messages::signal::MAX_SIGNAL_BUF_SIZE];
-    msg.clone().serialize_to(&mut msg_bytes, &mut ser_buf).expect("could not serialize").await.unwrap();
+    msg.clone()
+        .serialize_to(&mut msg_bytes, &mut ser_buf)
+        .expect("could not serialize")
+        .await
+        .unwrap();
 
     let stream = Builder::new().read(&msg_bytes).build();
     let mut reader = BufReader::new(stream);
@@ -52,9 +60,21 @@ async fn stream_test_multiple() {
     let msg2 = Signal::Kap;
     let mut msg_bytes = Vec::<u8>::new();
     let mut ser_buf = [0u8; smoke::messages::signal::MAX_SIGNAL_BUF_SIZE];
-    msg2.clone().serialize_to(&mut msg_bytes, &mut ser_buf).expect("could not serialize").await.unwrap();
-    msg.clone().serialize_to(&mut msg_bytes, &mut ser_buf).expect("could not serialize").await.unwrap();
-    msg2.clone().serialize_to(&mut msg_bytes, &mut ser_buf).expect("could not serialize").await.unwrap();
+    msg2.clone()
+        .serialize_to(&mut msg_bytes, &mut ser_buf)
+        .expect("could not serialize")
+        .await
+        .unwrap();
+    msg.clone()
+        .serialize_to(&mut msg_bytes, &mut ser_buf)
+        .expect("could not serialize")
+        .await
+        .unwrap();
+    msg2.clone()
+        .serialize_to(&mut msg_bytes, &mut ser_buf)
+        .expect("could not serialize")
+        .await
+        .unwrap();
 
     let stream = Builder::new().read(&msg_bytes).read(&msg_bytes).build();
     let mut reader = BufReader::new(stream);
@@ -98,7 +118,11 @@ async fn stream_test_fragmented() {
     let msg = Signal::Username("Aurelia".to_string());
     let mut msg_bytes = Vec::<u8>::new();
     let mut ser_buf = [0u8; smoke::messages::signal::MAX_SIGNAL_BUF_SIZE];
-    msg.clone().serialize_to(&mut msg_bytes, &mut ser_buf).expect("could not serialize").await.unwrap();
+    msg.clone()
+        .serialize_to(&mut msg_bytes, &mut ser_buf)
+        .expect("could not serialize")
+        .await
+        .unwrap();
     let (first, second) = msg_bytes.split_at(msg_bytes.len() / 3);
     let (second, third) = second.split_at(second.len() / 2);
 
@@ -120,7 +144,11 @@ async fn stream_test_fragmented_multi() {
     let msg = Signal::Username("Aurelia".to_string());
     let mut msg_bytes = Vec::<u8>::new();
     let mut ser_buf = [0u8; smoke::messages::signal::MAX_SIGNAL_BUF_SIZE];
-    msg.clone().serialize_to(&mut msg_bytes, &mut ser_buf).expect("could not serialize").await.unwrap();
+    msg.clone()
+        .serialize_to(&mut msg_bytes, &mut ser_buf)
+        .expect("could not serialize")
+        .await
+        .unwrap();
     let (first, second) = msg_bytes.split_at(msg_bytes.len() / 3);
     let (second, third) = second.split_at(second.len() / 2);
 
@@ -153,7 +181,11 @@ async fn stream_test_fragmented_multi_hybrid() {
     let msg = Signal::Username("Aurelia".to_string());
     let mut msg_bytes = Vec::<u8>::new();
     let mut ser_buf = [0u8; smoke::messages::signal::MAX_SIGNAL_BUF_SIZE];
-    msg.clone().serialize_to(&mut msg_bytes, &mut ser_buf).expect("could not serialize").await.unwrap();
+    msg.clone()
+        .serialize_to(&mut msg_bytes, &mut ser_buf)
+        .expect("could not serialize")
+        .await
+        .unwrap();
     let (first, second) = msg_bytes.split_at(msg_bytes.len() / 3);
     let (second, third) = second.split_at(second.len() / 2);
 
