@@ -19,6 +19,9 @@ env_logger = "0.9"
 criterion = { version = "0.3", features = ["html_reports", "async_tokio"] }
 iai = "0.1"
 
+[patch.crates-io]
+tokio-test = { path = "./tokio-test" }
+
 [[bench]]
 name = "criterion"
 harness = false
