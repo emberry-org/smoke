@@ -32,8 +32,8 @@ impl RhizMessage {
     ///
     /// # Cancel safety
     /// This method is not cancellation safe. If it is used as the event
-    /// in a tokio::select statement and some other branch completes first, 
-    /// then the serialized message may have been partially written, but 
+    /// in a tokio::select statement and some other branch completes first,
+    /// then the serialized message may have been partially written, but
     /// future calls will start from the beginning.
     ///
     /// # Errors
@@ -61,8 +61,8 @@ impl RhizMessage {
     /// This method clears the provided buffer before reading to it from the TlsStream
     ///
     /// # Cancel safety
-    /// This method is not cancellation safe. If the method is used as 
-    /// the event in a tokio::select statement and some other branch 
+    /// This method is not cancellation safe. If the method is used as
+    /// the event in a tokio::select statement and some other branch
     /// completes first, then some data may have been partially read.
     ///
     /// Any partially read bytes are appended to buf. Calling this method

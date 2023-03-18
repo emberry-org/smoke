@@ -1,0 +1,341 @@
+use std::time::Duration;
+
+use smoke::messages::Drain;
+use smoke::messages::Source;
+use smoke::Signal;
+use tokio::io::BufReader;
+use tokio_test::assert_pending;
+use tokio_test::assert_ready;
+use tokio_test::io::Builder;
+
+#[tokio::test]
+async fn stream_test() {
+    _ = env_logger::try_init();
+
+    let msg = Signal::Kap;
+    let mut msg_bytes = Vec::<u8>::new();
+    let mut ser_buf = [0u8; smoke::messages::signal::MAX_SIGNAL_BUF_SIZE];
+    msg.clone()
+        .serialize_to(&mut msg_bytes, &mut ser_buf)
+        .expect("could not serialize")
+        .await
+        .unwrap();
+
+    let stream = Builder::new().read(&msg_bytes).build();
+    let mut reader = BufReader::new(stream);
+
+    let mut agg = Vec::new();
+    let signal = reader.read_message_cancelable::<Signal>(&mut agg).await;
+
+    assert!(signal.is_ok());
+    assert_eq!(signal.unwrap(), msg);
+    assert!(agg.is_empty());
+}
+
+#[tokio::test]
+async fn stream_test_complex() {
+    _ = env_logger::try_init();
+
+    let msg = Signal::Username("Aurelia".to_string());
+    let mut msg_bytes = Vec::<u8>::new();
+    let mut ser_buf = [0u8; smoke::messages::signal::MAX_SIGNAL_BUF_SIZE];
+    msg.clone()
+        .serialize_to(&mut msg_bytes, &mut ser_buf)
+        .expect("could not serialize")
+        .await
+        .unwrap();
+
+    let stream = Builder::new().read(&msg_bytes).build();
+    let mut reader = BufReader::new(stream);
+
+    let mut agg = Vec::new();
+    let signal = reader.read_message_cancelable::<Signal>(&mut agg).await;
+
+    assert!(signal.is_ok());
+    assert_eq!(signal.unwrap(), msg);
+    assert!(agg.is_empty());
+}
+
+#[tokio::test]
+async fn stream_test_multiple() {
+    _ = env_logger::try_init();
+
+    let msg = Signal::Username("Aurelia".to_string());
+    let msg2 = Signal::Kap;
+    let mut msg_bytes = Vec::<u8>::new();
+    let mut ser_buf = [0u8; smoke::messages::signal::MAX_SIGNAL_BUF_SIZE];
+    msg2.clone()
+        .serialize_to(&mut msg_bytes, &mut ser_buf)
+        .expect("could not serialize")
+        .await
+        .unwrap();
+    msg.clone()
+        .serialize_to(&mut msg_bytes, &mut ser_buf)
+        .expect("could not serialize")
+        .await
+        .unwrap();
+    msg2.clone()
+        .serialize_to(&mut msg_bytes, &mut ser_buf)
+        .expect("could not serialize")
+        .await
+        .unwrap();
+
+    let stream = Builder::new().read(&msg_bytes).read(&msg_bytes).build();
+    let mut reader = BufReader::new(stream);
+
+    let mut agg = Vec::new();
+    let signal = reader.read_message_cancelable::<Signal>(&mut agg).await;
+    assert!(signal.is_ok());
+    assert_eq!(signal.unwrap(), msg2);
+    assert!(agg.is_empty());
+
+    let signal = reader.read_message_cancelable::<Signal>(&mut agg).await;
+    assert!(signal.is_ok());
+    assert_eq!(signal.unwrap(), msg);
+    assert!(agg.is_empty());
+
+    let signal = reader.read_message_cancelable::<Signal>(&mut agg).await;
+    assert!(signal.is_ok());
+    assert_eq!(signal.unwrap(), msg2);
+    assert!(agg.is_empty());
+
+    let signal = reader.read_message_cancelable::<Signal>(&mut agg).await;
+    assert!(signal.is_ok());
+    assert_eq!(signal.unwrap(), msg2);
+    assert!(agg.is_empty());
+
+    let signal = reader.read_message_cancelable::<Signal>(&mut agg).await;
+    assert!(signal.is_ok());
+    assert_eq!(signal.unwrap(), msg);
+    assert!(agg.is_empty());
+
+    let signal = reader.read_message_cancelable::<Signal>(&mut agg).await;
+    assert!(signal.is_ok());
+    assert_eq!(signal.unwrap(), msg2);
+    assert!(agg.is_empty());
+}
+
+#[tokio::test]
+async fn stream_test_fragmented() {
+    _ = env_logger::try_init();
+
+    let msg = Signal::Username("Aurelia".to_string());
+    let mut msg_bytes = Vec::<u8>::new();
+    let mut ser_buf = [0u8; smoke::messages::signal::MAX_SIGNAL_BUF_SIZE];
+    msg.clone()
+        .serialize_to(&mut msg_bytes, &mut ser_buf)
+        .expect("could not serialize")
+        .await
+        .unwrap();
+    let (first, second) = msg_bytes.split_at(msg_bytes.len() / 3);
+    let (second, third) = second.split_at(second.len() / 2);
+
+    let stream = Builder::new().read(first).read(second).read(third).build();
+    let mut reader = BufReader::new(stream);
+
+    let mut agg = Vec::new();
+    let signal = reader.read_message_cancelable::<Signal>(&mut agg).await;
+
+    assert!(signal.is_ok(), "{:?}", signal.unwrap_err());
+    assert_eq!(signal.unwrap(), msg);
+    assert!(agg.is_empty());
+}
+
+#[tokio::test]
+async fn stream_test_fragmented_multi() {
+    _ = env_logger::try_init();
+
+    let msg = Signal::Username("Aurelia".to_string());
+    let mut msg_bytes = Vec::<u8>::new();
+    let mut ser_buf = [0u8; smoke::messages::signal::MAX_SIGNAL_BUF_SIZE];
+    msg.clone()
+        .serialize_to(&mut msg_bytes, &mut ser_buf)
+        .expect("could not serialize")
+        .await
+        .unwrap();
+    let (first, second) = msg_bytes.split_at(msg_bytes.len() / 3);
+    let (second, third) = second.split_at(second.len() / 2);
+
+    let stream = Builder::new()
+        .read(first)
+        .read(second)
+        .read(third)
+        .read(first)
+        .read(second)
+        .read(third)
+        .build();
+    let mut reader = BufReader::new(stream);
+
+    let mut agg = Vec::new();
+    let signal = reader.read_message_cancelable::<Signal>(&mut agg).await;
+    assert!(signal.is_ok(), "{:?}", signal.unwrap_err());
+    assert_eq!(signal.unwrap(), msg);
+    assert!(agg.is_empty());
+
+    let signal = reader.read_message_cancelable::<Signal>(&mut agg).await;
+    assert!(signal.is_ok(), "{:?}", signal.unwrap_err());
+    assert_eq!(signal.unwrap(), msg);
+    assert!(agg.is_empty());
+}
+
+#[tokio::test]
+async fn stream_test_fragmented_multi_hybrid() {
+    _ = env_logger::try_init();
+
+    let msg = Signal::Username("Aurelia".to_string());
+    let mut msg_bytes = Vec::<u8>::new();
+    let mut ser_buf = [0u8; smoke::messages::signal::MAX_SIGNAL_BUF_SIZE];
+    msg.clone()
+        .serialize_to(&mut msg_bytes, &mut ser_buf)
+        .expect("could not serialize")
+        .await
+        .unwrap();
+    let (first, second) = msg_bytes.split_at(msg_bytes.len() / 3);
+    let (second, third) = second.split_at(second.len() / 2);
+
+    let stream = Builder::new()
+        .read(first)
+        .read(second)
+        .read(third)
+        .read(&msg_bytes)
+        .build();
+    let mut reader = BufReader::new(stream);
+
+    let mut agg = Vec::new();
+    let signal = reader.read_message_cancelable::<Signal>(&mut agg).await;
+    assert!(signal.is_ok(), "{:?}", signal.unwrap_err());
+    assert_eq!(signal.unwrap(), msg);
+    assert!(agg.is_empty());
+
+    let signal = reader.read_message_cancelable::<Signal>(&mut agg).await;
+    assert!(signal.is_ok(), "{:?}", signal.unwrap_err());
+    assert_eq!(signal.unwrap(), msg);
+    assert!(agg.is_empty());
+}
+
+#[tokio::test]
+async fn stream_test_fragmented_canceled_early() {
+    _ = env_logger::try_init();
+
+    let msg = Signal::Username("Aurelia".to_string());
+    let mut msg_bytes = Vec::<u8>::new();
+    let mut ser_buf = [0u8; smoke::messages::signal::MAX_SIGNAL_BUF_SIZE];
+    msg.clone()
+        .serialize_to(&mut msg_bytes, &mut ser_buf)
+        .expect("could not serialize")
+        .await
+        .unwrap();
+    let (first, second) = msg_bytes.split_at(msg_bytes.len() / 3);
+    let (second, third) = second.split_at(second.len() / 2);
+    let first_and_second: Vec<u8> = first
+        .iter()
+        .copied()
+        .chain(second.iter().copied())
+        .collect();
+
+    let stream = Builder::new()
+        .read(first)
+        .wait(Duration::from_millis(5))
+        // cancel on first
+        .read(second)
+        .wait(Duration::from_millis(5))
+        .read(third)
+        .build();
+    let mut reader = BufReader::new(stream);
+
+    let mut agg = Vec::new();
+    let mut task = tokio_test::task::spawn(reader.read_message_cancelable::<Signal>(&mut agg));
+    assert_pending!(task.poll(), "poll 1 should NOT yield result");
+    // simulate cancelation like in a select! by dropping the future
+    drop(task);
+    assert_eq!(
+        &agg, first,
+        "agg should have parts 1 of the message after poll 1"
+    );
+
+    let unsafe_agg: *const Vec<u8> = &agg as *const Vec<u8>;
+    let mut task = tokio_test::task::spawn(reader.read_message_cancelable::<Signal>(&mut agg));
+    // poll 2 more times to get the signal
+
+    // sleep for the io delay
+    tokio::time::sleep(Duration::from_millis(5)).await;
+    assert_pending!(task.poll(), "poll 2 should NOT yield result");
+    assert_eq!(
+        unsafe { &*unsafe_agg },
+        &first_and_second,
+        "agg should have parts 1 and 2 of the message after poll 2"
+    );
+
+    // sleep for the io delay
+    tokio::time::sleep(Duration::from_millis(5)).await;
+    let signal = assert_ready!(task.poll(), "third poll should yield result");
+
+    assert!(signal.is_ok(), "{:?}", signal.unwrap_err());
+    assert_eq!(signal.unwrap(), msg);
+    assert!(agg.is_empty());
+}
+
+#[tokio::test]
+async fn stream_test_fragmented_canceled_late() {
+    _ = env_logger::try_init();
+
+    let msg = Signal::Username("Aurelia".to_string());
+    let mut msg_bytes = Vec::<u8>::new();
+    let mut ser_buf = [0u8; smoke::messages::signal::MAX_SIGNAL_BUF_SIZE];
+    msg.clone()
+        .serialize_to(&mut msg_bytes, &mut ser_buf)
+        .expect("could not serialize")
+        .await
+        .unwrap();
+    let (first, second) = msg_bytes.split_at(msg_bytes.len() / 3);
+    let (second, third) = second.split_at(second.len() / 2);
+    let first_and_second: Vec<u8> = first
+        .iter()
+        .copied()
+        .chain(second.iter().copied())
+        .collect();
+
+    let stream = Builder::new()
+        .read(first)
+        .wait(Duration::from_millis(5))
+        .read(second)
+        .wait(Duration::from_millis(5))
+        // cancel on second
+        .read(third)
+        .build();
+
+    let mut reader = BufReader::new(stream);
+
+    let mut agg = Vec::new();
+    let unsafe_agg: *const Vec<u8> = &agg as *const Vec<u8>;
+    let mut task = tokio_test::task::spawn(reader.read_message_cancelable::<Signal>(&mut agg));
+    assert_pending!(task.poll(), "poll 1 should NOT yield result");
+    assert_eq!(
+        unsafe { &*unsafe_agg },
+        &first,
+        "agg should have parts 1 of the message after poll 1"
+    );
+
+    // sleep for the io delay
+    tokio::time::sleep(Duration::from_millis(5)).await;
+    assert_pending!(task.poll(), "poll 2 should NOT yield result");
+    // simulate cancelation like in a select! by dropping the future
+    drop(task);
+    assert_eq!(
+        &agg, &first_and_second,
+        "agg should have parts 1 and 2 of the message after poll 2"
+    );
+
+    let mut task = tokio_test::task::spawn(reader.read_message_cancelable::<Signal>(&mut agg));
+    // poll one final time to get signal
+
+    // sleep for the io delay
+    tokio::time::sleep(Duration::from_millis(5)).await;
+    let signal = assert_ready!(task.poll(), "third poll should yield result");
+
+    assert!(signal.is_ok(), "{:?}", signal.unwrap_err());
+    assert_eq!(signal.unwrap(), msg);
+    assert!(agg.is_empty());
+}
+
+//TODO Read Error tests

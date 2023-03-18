@@ -1,6 +1,6 @@
 [package]
 name = "smoke"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -11,12 +11,21 @@ log = "0.4"
 serde = { version = "1", features = ["derive"] }
 tokio-rustls = "0.23"
 tokio = { version = "1", features = ["rt", "net", "macros", "io-util", "sync", "time"]}
+pin-project-lite = "0.2"
 
 [dev-dependencies]
 tokio-test = "0.4.2"
 env_logger = "0.9"
 criterion = { version = "0.3", features = ["html_reports", "async_tokio"] }
+iai = "0.1"
+
+[patch.crates-io]
+tokio-test = { path = "./tokio-test" }
 
 [[bench]]
-name = "signal"
+name = "criterion"
+harness = false
+
+[[bench]]
+name = "iai"
 harness = false
