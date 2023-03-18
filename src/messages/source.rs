@@ -27,9 +27,10 @@ where
     /// the event in a tokio::select statement and some other branch
     /// completes first, then some data may have been partially read.
     ///
-    /// Any partially read bytes are appended to buf. Calling this method
-    /// again however will use a new buf and will most likely result in deserialization
-    /// failure.
+    /// Any partially read data is appended to an internal buffer which
+    /// is dropped with the future.
+    /// Calling this method again will use a new internal buffer,
+    /// most likely resulting in deserialization failure.
     ///
     /// # Errors
     /// This function will return:</br>
