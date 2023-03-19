@@ -1,9 +1,10 @@
-use std::time::Duration;
-
 use smoke::messages::Drain;
 use smoke::messages::Source;
 use smoke::Signal;
+
 use tokio::io::BufReader;
+use tokio::time::Duration;
+
 use tokio_test::assert_pending;
 use tokio_test::assert_ready;
 use tokio_test::io::Builder;
@@ -213,8 +214,9 @@ async fn stream_test_fragmented_multi_hybrid() {
     assert!(agg.is_empty());
 }
 
-#[tokio::test]
+#[tokio::test(start_paused = true)]
 async fn stream_test_fragmented_canceled_early() {
+    const WAIT: Duration = Duration::from_secs(1);
     _ = env_logger::try_init();
 
     let msg = Signal::Username("Aurelia".to_string());
@@ -235,10 +237,10 @@ async fn stream_test_fragmented_canceled_early() {
 
     let stream = Builder::new()
         .read(first)
-        .wait(Duration::from_millis(5))
+        .wait(WAIT)
         // cancel on first
         .read(second)
-        .wait(Duration::from_millis(5))
+        .wait(WAIT)
         .read(third)
         .build();
     let mut reader = BufReader::new(stream);
@@ -258,7 +260,7 @@ async fn stream_test_fragmented_canceled_early() {
     // poll 2 more times to get the signal
 
     // sleep for the io delay
-    tokio::time::sleep(Duration::from_millis(5)).await;
+    tokio::time::sleep(WAIT).await;
     assert_pending!(task.poll(), "poll 2 should NOT yield result");
     assert_eq!(
         unsafe { &*unsafe_agg },
@@ -267,7 +269,7 @@ async fn stream_test_fragmented_canceled_early() {
     );
 
     // sleep for the io delay
-    tokio::time::sleep(Duration::from_millis(5)).await;
+    tokio::time::sleep(WAIT).await;
     let signal = assert_ready!(task.poll(), "third poll should yield result");
 
     assert!(signal.is_ok(), "{:?}", signal.unwrap_err());
@@ -275,8 +277,9 @@ async fn stream_test_fragmented_canceled_early() {
     assert!(agg.is_empty());
 }
 
-#[tokio::test]
+#[tokio::test(start_paused = true)]
 async fn stream_test_fragmented_canceled_late() {
+    const WAIT: Duration = Duration::from_secs(1);
     _ = env_logger::try_init();
 
     let msg = Signal::Username("Aurelia".to_string());
@@ -297,9 +300,9 @@ async fn stream_test_fragmented_canceled_late() {
 
     let stream = Builder::new()
         .read(first)
-        .wait(Duration::from_millis(5))
+        .wait(WAIT)
         .read(second)
-        .wait(Duration::from_millis(5))
+        .wait(WAIT)
         // cancel on second
         .read(third)
         .build();
@@ -317,7 +320,7 @@ async fn stream_test_fragmented_canceled_late() {
     );
 
     // sleep for the io delay
-    tokio::time::sleep(Duration::from_millis(5)).await;
+    tokio::time::sleep(WAIT).await;
     assert_pending!(task.poll(), "poll 2 should NOT yield result");
     // simulate cancelation like in a select! by dropping the future
     drop(task);
@@ -330,7 +333,7 @@ async fn stream_test_fragmented_canceled_late() {
     // poll one final time to get signal
 
     // sleep for the io delay
-    tokio::time::sleep(Duration::from_millis(5)).await;
+    tokio::time::sleep(WAIT).await;
     let signal = assert_ready!(task.poll(), "third poll should yield result");
 
     assert!(signal.is_ok(), "{:?}", signal.unwrap_err());
