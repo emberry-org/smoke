@@ -1,12 +1,12 @@
 use std::{
     fs::{File, OpenOptions},
-    io::{BufRead, BufReader, Read},
+    io::{self, BufRead, BufReader, Read},
     path::Path,
 };
 
 use crate::Signal;
 
-use super::signal::{MAX_SIGNAL_BUF_SIZE, MAX_FILE_PART_DATA_SIZE};
+use super::signal::{MAX_FILE_PART_DATA_SIZE, MAX_SIGNAL_BUF_SIZE};
 
 pub struct Splitter<T: BufRead> {
     /// indentifier for the file partitioning operation
@@ -44,7 +44,14 @@ impl<T: BufRead> Iterator for Splitter<T> {
 
 impl<T: BufRead> Splitter<T> {
     pub fn read_file<P: AsRef<Path>>(path: P) -> std::io::Result<Splitter<BufReader<File>>> {
-        let filename = path.as_ref().to_string_lossy().into_owned();
+        let filename = path
+            .as_ref()
+            .file_name()
+            .map_or(Err(io::Error::new(io::ErrorKind::Other, "not a file")), |name| {
+                Ok(name)
+            })?
+            .to_string_lossy()
+            .into_owned();
 
         let file = OpenOptions::new().read(true).open(path)?;
         let reader = BufReader::new(file);
