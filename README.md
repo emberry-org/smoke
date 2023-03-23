@@ -13,14 +13,6 @@
 
 <br>
 
-<div align="center">
-    <a href="#development">Development</a>
-    ·
-    <a href="#license">License</a>
-</div>
-    
-<br>
-
 <h2 align="left">
   <samp>
     <b>Development</b>
@@ -32,18 +24,8 @@ To use this as dependency add ``smoke = { version = "0", git = "https://github.c
 [dependencies]
 smoke = { version = "0", git = "https://github.com/emberry-org/smoke" }
 ```
-<br>
 
 <br>
 
-<h2 align="left">
-  <samp>
-    <b>License</b>
-  </samp>
-</h2>
-
-Copyright (c) Max Coppen, Christopher Freund. All rights reserved.
-
-Licensed under the GNU general public license.
-
-<br>
+<h2></h2>
+<div align="right"><sub>© 2023 Devensiv & Max, All rights reserved — <a href="./license.md">GNU GPLv3</a>.</sub></div>
