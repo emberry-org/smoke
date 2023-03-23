@@ -28,4 +28,4 @@ smoke = { version = "0", git = "https://github.com/emberry-org/smoke" }
 <br>
 
 <h2></h2>
-<div align="right"><sub>© 2023 Devensiv & Max, All rights reserved — <a href="./license.md">GNU GPLv3</a>.</sub></div>
+<div align="right"><sub>© 2023 Devensiv & Max, All rights reserved — <a href="./LICENSE">GNU GPLv3</a>.</sub></div>
