@@ -15,6 +15,14 @@ pub enum Signal {
     Username(String),
     /// "String" is the unsanitized UTF-8 message content of a chat message
     Chat(String),
-    ///
-    Hypha(hypha::Signal),
+    /// Transfers a Vlink data package
+    Vlink(hypha::Signal),
+    /// Requests opening a tcp tunnel to the peer
+    /// "u16" is the port on the remotes local host to which you want to establish a connection
+    RequestVlink(u16),
+    /// "String" is the stringified io::Error in case opening the socket failed
+    /// it will also contain an error when the request was rejected
+    AcceptVlink(Result<u16, String>),
+    /// Kill the current Hypha closing the port connection
+    KillVlink,
 }

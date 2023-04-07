@@ -12,15 +12,18 @@ serde = { version = "1", features = ["derive"] }
 tokio-rustls = "0.23"
 tokio = { version = "1", features = ["rt", "net", "macros", "io-util", "sync", "time"]}
 pin-project-lite = "0.2"
+vlink = { version = "0.2", default-features = false }
 
 [dev-dependencies]
 tokio-test = "0.4.2"
 env_logger = "0.9"
 criterion = { version = "0.3", features = ["html_reports", "async_tokio"] }
 iai = "0.1"
+vlink = { version = "0.2" }
 
 [patch.crates-io]
 tokio-test = { path = "./tokio-test" }
+vlink = { path = "../vlink" }
 
 [[bench]]
 name = "criterion"
