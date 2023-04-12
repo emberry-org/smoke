@@ -46,7 +46,7 @@ impl EmbMessage {
         let bytes = match postcard::to_vec_cobs::<Self, EMB_MESSAGE_BUF_SIZE>(&self) {
             Ok(vec) => vec,
             Err(e) => {
-                log::error!(
+                tracing::error!(
                     "Serialization of message failed. Message requires more then {} bytes to be serialized",
                     EMB_MESSAGE_BUF_SIZE
                 );

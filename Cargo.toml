@@ -7,19 +7,20 @@ edition = "2021"
 
 [dependencies]
 postcard = "1"
-log = "0.4"
 serde = { version = "1", features = ["derive"] }
 tokio-rustls = "0.23"
 tokio = { version = "1", features = ["rt", "net", "macros", "io-util", "sync", "time"]}
 pin-project-lite = "0.2"
 vlink = { version = "0.2", default-features = false }
+tracing = "0.1"
 
 [dev-dependencies]
 tokio-test = "0.4.2"
-env_logger = "0.9"
 criterion = { version = "0.3", features = ["html_reports", "async_tokio"] }
 iai = "0.1"
 vlink = { version = "0.2" }
+test-log = { version = "0.2", features = [ "trace" ], default-features = false }
+tracing-subscriber = { version = "0.3", features = [ "fmt", "env-filter" ] }
 
 [patch.crates-io]
 tokio-test = { path = "./tokio-test" }

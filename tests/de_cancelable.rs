@@ -9,10 +9,8 @@ use tokio_test::assert_pending;
 use tokio_test::assert_ready;
 use tokio_test::io::Builder;
 
-#[tokio::test]
+#[test_log::test(tokio::test)]
 async fn stream_test() {
-    _ = env_logger::try_init();
-
     let msg = Signal::Kap;
     let mut msg_bytes = Vec::<u8>::new();
     let mut ser_buf = [0u8; smoke::messages::signal::MAX_SIGNAL_BUF_SIZE];
@@ -33,10 +31,8 @@ async fn stream_test() {
     assert!(agg.is_empty());
 }
 
-#[tokio::test]
+#[test_log::test(tokio::test)]
 async fn stream_test_complex() {
-    _ = env_logger::try_init();
-
     let msg = Signal::Username("Aurelia".to_string());
     let mut msg_bytes = Vec::<u8>::new();
     let mut ser_buf = [0u8; smoke::messages::signal::MAX_SIGNAL_BUF_SIZE];
@@ -57,10 +53,8 @@ async fn stream_test_complex() {
     assert!(agg.is_empty());
 }
 
-#[tokio::test]
+#[test_log::test(tokio::test)]
 async fn stream_test_multiple() {
-    _ = env_logger::try_init();
-
     let msg = Signal::Username("Aurelia".to_string());
     let msg2 = Signal::Kap;
     let mut msg_bytes = Vec::<u8>::new();
@@ -116,10 +110,8 @@ async fn stream_test_multiple() {
     assert!(agg.is_empty());
 }
 
-#[tokio::test]
+#[test_log::test(tokio::test)]
 async fn stream_test_fragmented() {
-    _ = env_logger::try_init();
-
     let msg = Signal::Username("Aurelia".to_string());
     let mut msg_bytes = Vec::<u8>::new();
     let mut ser_buf = [0u8; smoke::messages::signal::MAX_SIGNAL_BUF_SIZE];
@@ -142,10 +134,8 @@ async fn stream_test_fragmented() {
     assert!(agg.is_empty());
 }
 
-#[tokio::test]
+#[test_log::test(tokio::test)]
 async fn stream_test_fragmented_multi() {
-    _ = env_logger::try_init();
-
     let msg = Signal::Username("Aurelia".to_string());
     let mut msg_bytes = Vec::<u8>::new();
     let mut ser_buf = [0u8; smoke::messages::signal::MAX_SIGNAL_BUF_SIZE];
@@ -179,10 +169,8 @@ async fn stream_test_fragmented_multi() {
     assert!(agg.is_empty());
 }
 
-#[tokio::test]
+#[test_log::test(tokio::test)]
 async fn stream_test_fragmented_multi_hybrid() {
-    _ = env_logger::try_init();
-
     let msg = Signal::Username("Aurelia".to_string());
     let mut msg_bytes = Vec::<u8>::new();
     let mut ser_buf = [0u8; smoke::messages::signal::MAX_SIGNAL_BUF_SIZE];
@@ -214,10 +202,9 @@ async fn stream_test_fragmented_multi_hybrid() {
     assert!(agg.is_empty());
 }
 
-#[tokio::test(start_paused = true)]
+#[test_log::test(tokio::test(start_paused = true))]
 async fn stream_test_fragmented_canceled_early() {
     const WAIT: Duration = Duration::from_secs(1);
-    _ = env_logger::try_init();
 
     let msg = Signal::Username("Aurelia".to_string());
     let mut msg_bytes = Vec::<u8>::new();
@@ -277,10 +264,9 @@ async fn stream_test_fragmented_canceled_early() {
     assert!(agg.is_empty());
 }
 
-#[tokio::test(start_paused = true)]
+#[test_log::test(tokio::test(start_paused = true))]
 async fn stream_test_fragmented_canceled_late() {
     const WAIT: Duration = Duration::from_secs(1);
-    _ = env_logger::try_init();
 
     let msg = Signal::Username("Aurelia".to_string());
     let mut msg_bytes = Vec::<u8>::new();
