@@ -3,6 +3,7 @@ pub mod emb_message;
 pub mod hypha;
 pub mod rhiz_message;
 mod room_id;
+#[cfg(feature = "client")]
 pub mod signal;
 mod source;
 

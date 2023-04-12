@@ -32,6 +32,7 @@
         commonArgs = {
           nativeBuildInputs = with pkgs; [ 
 		  fenixToolchain 
+		  valgrind
 		  # pkg-config 
 	  ];
 
