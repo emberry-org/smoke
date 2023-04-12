@@ -1,9 +1,9 @@
 mod drain;
 pub mod emb_message;
+pub mod hypha;
 pub mod rhiz_message;
 mod room_id;
 pub mod signal;
-pub mod hypha;
 mod source;
 
 pub use drain::Drain;
