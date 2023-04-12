@@ -4,7 +4,7 @@ use super::hypha;
 
 pub const MAX_SIGNAL_BUF_SIZE: usize = 4096;
 
-/// Container for all possible messages that are being sent from Rhizome (server) to Emberry (client)
+/// Container for all possible messages that are being sent from Emberry (client) to Emberry (client) (p2p)
 #[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq)]
 pub enum Signal {
     /// Keep alive message
