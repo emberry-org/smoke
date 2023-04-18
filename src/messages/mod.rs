@@ -1,6 +1,6 @@
 mod drain;
 pub mod emb_message;
-pub mod hypha;
+pub mod vlink;
 pub mod rhiz_message;
 mod room_id;
 #[cfg(feature = "client")]

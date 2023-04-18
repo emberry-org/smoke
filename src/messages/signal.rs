@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use super::hypha;
+use super::vlink;
 
 pub const MAX_SIGNAL_BUF_SIZE: usize = 4096;
 
@@ -16,7 +16,7 @@ pub enum Signal {
     /// "String" is the unsanitized UTF-8 message content of a chat message
     Chat(String),
     /// Transfers a Vlink data package
-    Vlink(hypha::Signal),
+    Vlink(vlink::Signal),
     /// Requests opening a tcp tunnel to the peer
     /// "u16" is the port on the remotes local host to which you want to establish a connection
     RequestVlink(u16),

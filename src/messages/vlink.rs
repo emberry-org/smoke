@@ -3,20 +3,23 @@
 use serde::{Deserialize, Serialize};
 use vlink::Action;
 
-/// Container for all possible messages that are being sent from via Hyphae
+/// wraps [Action] for usage with smoke
 #[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq)]
 pub enum Signal {
-    /// "u16" is vport
+    /// refer to [Action::Connect]
     Connect(u16),
-    /// "u16" is vport, "Vec<u8>" is data
+    /// refer to [Action::Data]
     Data(u16, Vec<u8>),
-    /// "u16" is vport, "String" is stringified `io::Error`
+    /// refer to [Action::Error]
+    /// The error is stingified for serialization
     Error(u16, String),
-    /// "String" is stringified `io::Error`
+    /// refer to [Action::AcceptError]
+    /// The error is stingified for serialization
     AcceptError(String),
 }
 
 impl Signal {
+    /// Converts [Signal] to [Action] using borrowing for the Data variant
     pub fn as_vlink(&self) -> Action<'_> {
         match self {
             Signal::Data(vport, data) => Action::Data(*vport, data),
@@ -31,6 +34,7 @@ impl Signal {
         }
     }
 
+    /// Converts [Action] to [Signal] cloning all the contained data
     pub fn from_vlink(vlink: &Action) -> Signal {
         match vlink {
             Action::Data(vport, data) => Signal::Data(*vport, Vec::from(*data)),
