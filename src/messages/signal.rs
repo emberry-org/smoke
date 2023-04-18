@@ -11,18 +11,24 @@ pub enum Signal {
     Kap,
     /// End of conversation. Prompts to close the connection
     EOC,
-    /// "String" is the username of the sender
+    /// `Username( ... ).0` - sets the `username` of the peer
     Username(String),
-    /// "String" is the unsanitized UTF-8 message content of a chat message
-    Chat(String),
-    /// Transfers a Vlink data package
+    /// `Vlink( ... ).0` - Transfers a wrapped [vlink::Action] to the currently active [vlink::TcpBridge]
     Vlink(vlink::Signal),
-    /// Requests opening a tcp tunnel to the peer
-    /// "u16" is the port on the remotes local host to which you want to establish a connection
-    RequestVlink(u16),
-    /// "String" is the stringified io::Error in case opening the socket failed
-    /// it will also contain an error when the request was rejected
-    AcceptVlink(Result<u16, String>),
-    /// Kill the current Hypha closing the port connection
-    KillVlink,
+    /// `VlinkOpen( ... ).0` - `vlinkid`
+    /// 
+    /// Informs the peer that a vlink with the name of `vlinkid` has been opened to accept connections
+    VlinkOpen(String),
+    /// Cuts the current Vlink connection
+    /// 
+    /// This is only valid information when the client sending this previously sent VlinkOpen
+    VlinkCut,
+    /// `ChangeContext( ... ).0` - changes the `context` to which all following context sensitive [Signal]s are adressed
+    ChangeContext(String),
+    /// CONTEXT SENSITIVE
+    /// 
+    /// `Message( ... ).0` - inputs `message` to the current `context`
+    /// 
+    /// `message` is unsalitized UTF-8 user input
+    Message(String),
 }
