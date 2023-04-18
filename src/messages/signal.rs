@@ -9,8 +9,6 @@ pub const MAX_SIGNAL_BUF_SIZE: usize = 4096;
 pub enum Signal {
     /// Keep alive message
     Kap,
-    /// End of conversation. Prompts to close the connection
-    EOC,
     /// `Username( ... ).0` - sets the `username` of the peer
     Username(String),
     /// `Vlink( ... ).0` - Transfers a wrapped [vlink::Action] to the currently active [vlink::TcpBridge]
