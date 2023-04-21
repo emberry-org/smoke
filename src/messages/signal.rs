@@ -1,8 +1,11 @@
+use std::time::Duration;
+
 use serde::{Deserialize, Serialize};
 
 use super::vlink;
 
 pub const MAX_SIGNAL_BUF_SIZE: usize = 4096;
+pub const KAP_TIMEOUT: Duration = Duration::from_secs(20);
 
 /// Container for all possible messages that are being sent from Emberry (client) to Emberry (client) (p2p)
 #[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq)]
