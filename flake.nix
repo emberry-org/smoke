@@ -38,7 +38,6 @@
 
           buildInputs = with pkgs; [
 		cargo-audit
-		cargo-auditable
             # glib
             # openssl
           ];
