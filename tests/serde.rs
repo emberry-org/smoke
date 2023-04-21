@@ -1,16 +1,15 @@
 use smoke::messages::Drain;
+use smoke::messages::EmbMessage;
 use smoke::messages::Source;
-use smoke::Signal;
+use smoke::User;
 use tokio::io::BufReader;
 use tokio_test::io::Builder;
 
-#[tokio::test]
+#[test_log::test(tokio::test)]
 async fn stream_test() {
-    _ = env_logger::try_init();
-
-    let msg = Signal::Kap;
+    let msg = EmbMessage::Heartbeat;
     let mut msg_bytes = Vec::<u8>::new();
-    let mut ser_buf = [0u8; smoke::messages::signal::MAX_SIGNAL_BUF_SIZE];
+    let mut ser_buf = [0u8; smoke::messages::EMB_MESSAGE_BUF_SIZE];
     msg.clone()
         .serialize_to(&mut msg_bytes, &mut ser_buf)
         .expect("could not serialize")
@@ -20,19 +19,19 @@ async fn stream_test() {
     let stream = Builder::new().read(&msg_bytes).build();
     let mut reader = BufReader::new(stream);
 
-    let signal = reader.read_message::<Signal>().await;
+    let signal = reader.read_message::<EmbMessage>().await;
 
     assert!(signal.is_ok());
     assert_eq!(signal.unwrap(), msg);
 }
 
-#[tokio::test]
+#[test_log::test(tokio::test)]
 async fn stream_test_complex() {
-    _ = env_logger::try_init();
-
-    let msg = Signal::Username("Aurelia".to_string());
+    let msg = EmbMessage::Room(User {
+        cert_data: b"Aurelia".to_vec(),
+    });
     let mut msg_bytes = Vec::<u8>::new();
-    let mut ser_buf = [0u8; smoke::messages::signal::MAX_SIGNAL_BUF_SIZE];
+    let mut ser_buf = [0u8; smoke::messages::EMB_MESSAGE_BUF_SIZE];
     msg.clone()
         .serialize_to(&mut msg_bytes, &mut ser_buf)
         .expect("could not serialize")
@@ -42,20 +41,20 @@ async fn stream_test_complex() {
     let stream = Builder::new().read(&msg_bytes).build();
     let mut reader = BufReader::new(stream);
 
-    let signal = reader.read_message::<Signal>().await;
+    let signal = reader.read_message::<EmbMessage>().await;
 
     assert!(signal.is_ok());
     assert_eq!(signal.unwrap(), msg);
 }
 
-#[tokio::test]
+#[test_log::test(tokio::test)]
 async fn stream_test_multiple() {
-    _ = env_logger::try_init();
-
-    let msg = Signal::Username("Aurelia".to_string());
-    let msg2 = Signal::Kap;
+    let msg = EmbMessage::Room(User {
+        cert_data: b"Aurelia".to_vec(),
+    });
+    let msg2 = EmbMessage::Heartbeat;
     let mut msg_bytes = Vec::<u8>::new();
-    let mut ser_buf = [0u8; smoke::messages::signal::MAX_SIGNAL_BUF_SIZE];
+    let mut ser_buf = [0u8; smoke::messages::EMB_MESSAGE_BUF_SIZE];
     msg2.clone()
         .serialize_to(&mut msg_bytes, &mut ser_buf)
         .expect("could not serialize")
@@ -75,38 +74,38 @@ async fn stream_test_multiple() {
     let stream = Builder::new().read(&msg_bytes).read(&msg_bytes).build();
     let mut reader = BufReader::new(stream);
 
-    let signal = reader.read_message::<Signal>().await;
+    let signal = reader.read_message::<EmbMessage>().await;
     assert!(signal.is_ok());
     assert_eq!(signal.unwrap(), msg2);
 
-    let signal = reader.read_message::<Signal>().await;
+    let signal = reader.read_message::<EmbMessage>().await;
     assert!(signal.is_ok());
     assert_eq!(signal.unwrap(), msg);
 
-    let signal = reader.read_message::<Signal>().await;
+    let signal = reader.read_message::<EmbMessage>().await;
     assert!(signal.is_ok());
     assert_eq!(signal.unwrap(), msg2);
 
-    let signal = reader.read_message::<Signal>().await;
+    let signal = reader.read_message::<EmbMessage>().await;
     assert!(signal.is_ok());
     assert_eq!(signal.unwrap(), msg2);
 
-    let signal = reader.read_message::<Signal>().await;
+    let signal = reader.read_message::<EmbMessage>().await;
     assert!(signal.is_ok());
     assert_eq!(signal.unwrap(), msg);
 
-    let signal = reader.read_message::<Signal>().await;
+    let signal = reader.read_message::<EmbMessage>().await;
     assert!(signal.is_ok());
     assert_eq!(signal.unwrap(), msg2);
 }
 
-#[tokio::test]
+#[test_log::test(tokio::test)]
 async fn stream_test_fragmented() {
-    _ = env_logger::try_init();
-
-    let msg = Signal::Username("Aurelia".to_string());
+    let msg = EmbMessage::Room(User {
+        cert_data: b"Aurelia".to_vec(),
+    });
     let mut msg_bytes = Vec::<u8>::new();
-    let mut ser_buf = [0u8; smoke::messages::signal::MAX_SIGNAL_BUF_SIZE];
+    let mut ser_buf = [0u8; smoke::messages::EMB_MESSAGE_BUF_SIZE];
     msg.clone()
         .serialize_to(&mut msg_bytes, &mut ser_buf)
         .expect("could not serialize")
@@ -118,18 +117,18 @@ async fn stream_test_fragmented() {
     let stream = Builder::new().read(first).read(second).read(third).build();
     let mut reader = BufReader::new(stream);
 
-    let signal = reader.read_message::<Signal>().await;
+    let signal = reader.read_message::<EmbMessage>().await;
     assert!(signal.is_ok(), "{:?}", signal.unwrap_err());
     assert_eq!(signal.unwrap(), msg);
 }
 
-#[tokio::test]
+#[test_log::test(tokio::test)]
 async fn stream_test_fragmented_multi() {
-    _ = env_logger::try_init();
-
-    let msg = Signal::Username("Aurelia".to_string());
+    let msg = EmbMessage::Room(User {
+        cert_data: b"Aurelia".to_vec(),
+    });
     let mut msg_bytes = Vec::<u8>::new();
-    let mut ser_buf = [0u8; smoke::messages::signal::MAX_SIGNAL_BUF_SIZE];
+    let mut ser_buf = [0u8; smoke::messages::EMB_MESSAGE_BUF_SIZE];
     msg.clone()
         .serialize_to(&mut msg_bytes, &mut ser_buf)
         .expect("could not serialize")
@@ -148,22 +147,22 @@ async fn stream_test_fragmented_multi() {
         .build();
     let mut reader = BufReader::new(stream);
 
-    let signal = reader.read_message::<Signal>().await;
+    let signal = reader.read_message::<EmbMessage>().await;
     assert!(signal.is_ok(), "{:?}", signal.unwrap_err());
     assert_eq!(signal.unwrap(), msg);
 
-    let signal = reader.read_message::<Signal>().await;
+    let signal = reader.read_message::<EmbMessage>().await;
     assert!(signal.is_ok(), "{:?}", signal.unwrap_err());
     assert_eq!(signal.unwrap(), msg);
 }
 
 #[tokio::test]
 async fn stream_test_fragmented_multi_hybrid() {
-    _ = env_logger::try_init();
-
-    let msg = Signal::Username("Aurelia".to_string());
+    let msg = EmbMessage::Room(User {
+        cert_data: b"Aurelia".to_vec(),
+    });
     let mut msg_bytes = Vec::<u8>::new();
-    let mut ser_buf = [0u8; smoke::messages::signal::MAX_SIGNAL_BUF_SIZE];
+    let mut ser_buf = [0u8; smoke::messages::EMB_MESSAGE_BUF_SIZE];
     msg.clone()
         .serialize_to(&mut msg_bytes, &mut ser_buf)
         .expect("could not serialize")
@@ -180,11 +179,11 @@ async fn stream_test_fragmented_multi_hybrid() {
         .build();
     let mut reader = BufReader::new(stream);
 
-    let signal = reader.read_message::<Signal>().await;
+    let signal = reader.read_message::<EmbMessage>().await;
     assert!(signal.is_ok(), "{:?}", signal.unwrap_err());
     assert_eq!(signal.unwrap(), msg);
 
-    let signal = reader.read_message::<Signal>().await;
+    let signal = reader.read_message::<EmbMessage>().await;
     assert!(signal.is_ok(), "{:?}", signal.unwrap_err());
     assert_eq!(signal.unwrap(), msg);
 }

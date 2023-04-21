@@ -10,7 +10,7 @@ use crate::User;
 pub const EMB_MESSAGE_BUF_SIZE: usize = 1024;
 
 /// Container for all possible messages that are being sent from Emberry (client) to Rhizome (server)
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq)]
 pub enum EmbMessage {
     /// Request Rhizome to inform "User" that <we> would like to initiate a P2P connection
     Room(User),
@@ -46,7 +46,7 @@ impl EmbMessage {
         let bytes = match postcard::to_vec_cobs::<Self, EMB_MESSAGE_BUF_SIZE>(&self) {
             Ok(vec) => vec,
             Err(e) => {
-                log::error!(
+                tracing::error!(
                     "Serialization of message failed. Message requires more then {} bytes to be serialized",
                     EMB_MESSAGE_BUF_SIZE
                 );
