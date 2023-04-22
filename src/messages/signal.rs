@@ -17,19 +17,19 @@ pub enum Signal {
     /// `Vlink( ... ).0` - Transfers a wrapped [vlink::Action] to the currently active [vlink::TcpBridge]
     Vlink(vlink::Signal),
     /// `VlinkOpen( ... ).0` - `vlinkid`
-    /// 
+    ///
     /// Informs the peer that a vlink with the name of `vlinkid` has been opened to accept connections
     VlinkOpen(String),
     /// Cuts the current Vlink connection
-    /// 
+    ///
     /// This is only valid information when the client sending this previously sent VlinkOpen
     VlinkCut,
     /// `ChangeContext( ... ).0` - changes the `context` to which all following context sensitive [Signal]s are adressed
     ChangeContext(String),
     /// CONTEXT SENSITIVE
-    /// 
+    ///
     /// `Message( ... ).0` - inputs `message` to the current `context`
-    /// 
+    ///
     /// `message` is unsalitized UTF-8 user input
     Message(String),
 }

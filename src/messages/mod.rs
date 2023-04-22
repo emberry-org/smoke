@@ -1,11 +1,11 @@
 mod drain;
 pub mod emb_message;
-pub mod vlink;
 pub mod rhiz_message;
 mod room_id;
 #[cfg(feature = "client")]
 pub mod signal;
 mod source;
+pub mod vlink;
 
 pub use drain::Drain;
 pub use emb_message::EmbMessage;
