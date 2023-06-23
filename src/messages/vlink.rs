@@ -1,5 +1,3 @@
-///! Hypha (pl. hyphae) are the backbone of the port forwarding that emberry uses
-///! to tunnel arbitrary application data from one client to another.
 use serde::{Deserialize, Serialize};
 use vlink::Action;
 
